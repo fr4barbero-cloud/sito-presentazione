@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presentazione interattiva</title>
+<style>
+:root {
+  --blu-notte:#102f45;
+  --carta:#91b0c1;
+  --carta-chiaro:#d8e4ea;
+}
+
+* {
+  box-sizing:border-box;
+}
+
+html, body {
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:Arial, sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(255,255,255,.45), transparent 28%),
+    linear-gradient(135deg, #8faebe, #c6d6de);
+}
+
+.stage {
+  position:fixed;
+  inset:0 0 112px 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px 22px;
+}
+
+#slideFrame {
+  width:100%;
+  height:100%;
+  border:0;
+  border-radius:24px;
+  background:#f7f4ed;
+  box-shadow:0 22px 70px rgba(16,47,69,.28);
+}
+
+.bottom-strip {
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:112px;
+  background:var(--blu-notte);
+  z-index:5;
+}
+
+.bottom-bar {
+  position:fixed;
+  left:50%;
+  bottom:10px;
+  transform:translateX(-50%);
+  width:min(100vw,1500px);
+  height:92px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  padding:0 20px;
+  z-index:6;
+}
+
+.nav-btn {
+  flex:1;
+  height:82px;
+  min-width:0;
+  border:0;
+  background:transparent;
+  color:rgba(255,255,255,.84);
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:0 8px;
+}
+
+.nav-btn span {
+  display:block;
+  font-size:.8rem;
+  font-weight:700;
+  line-height:1;
+  margin-bottom:6px;
+}
+
+.nav-btn em {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:34px;
+  font-style:normal;
+  font-size:.8rem;
+  line-height:1.12;
+  text-align:center;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+  color:#ffffff;
+}
+
+.nav-btn.active em {
+  font-weight:700;
+}
+
+.arrow {
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:7;
+  width:44px;
+  height:68px;
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:18px;
+  background:rgba(16,47,69,.45);
+  color:#fff;
+  font-size:2rem;
+  cursor:pointer;
+  backdrop-filter:blur(12px);
+}
+
+.arrow:hover {
+  background:var(--blu-notte);
+}
+
+.prev { left:18px; }
+.next { right:18px; }
+
+.popup-overlay {
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(16,47,69,.55);
+  z-index:50;
+  padding:42px;
+}
+
+.popup-overlay.open {
+  display:flex;
+}
+
+.popup-window {
+  position:relative;
+  width:min(92vw,1280px);
+  height:min(86vh,820px);
+  background:white;
+  border-radius:24px;
+  box-shadow:0 26px 90px rgba(0,0,0,.35);
+  overflow:hidden;
+}
+
+.popup-window iframe {
+  width:100%;
+  height:100%;
+  border:0;
+  background:white;
+}
+
+.popup-close {
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:2;
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:50%;
+  background:var(--blu-notte);
+  color:white;
+  font-size:24px;
+  cursor:pointer;
+  line-height:42px;
+}
+
+.popup-fallback {
+  position:absolute;
+  left:18px;
+  top:16px;
+  z-index:2;
+  background:rgba(16,47,69,.9);
+  color:white;
+  text-decoration:none;
+  padding:9px 14px;
+  border-radius:999px;
+  font-size:.86rem;
+}
+
+@media(max-width:900px) {
+  .stage {
+    inset:0 0 126px 0;
+    padding:10px;
+  }
+
+  .bottom-strip {
+    height:126px;
+  }
+
+  .bottom-bar {
+    overflow-x:auto;
+    justify-content:flex-start;
+    height:106px;
+    padding:0 10px;
+  }
+
+  .nav-btn {
+    flex:0 0 122px;
+  }
+
+  .arrow {
+    display:none;
+  }
+
+  .popup-overlay {
+    padding:14px;
+  }
+
+  .popup-window {
+    width:96vw;
+    height:86vh;
+    border-radius:18px;
+  }
+}
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <iframe id="slideFrame" src="slide_01.html" title="Slide"></iframe>
+</main>
+
+<button class="arrow prev" onclick="go(-1)" aria-label="Slide precedente">‹</button>
+<button class="arrow next" onclick="go(1)" aria-label="Slide successiva">›</button>
+
+<div class="bottom-strip"></div>
+<nav class="bottom-bar" aria-label="Navigazione slide">
+<button class="nav-btn" data-index="0" aria-label="Home"><span>1</span><em>Home</em></button>
+<button class="nav-btn" data-index="1" aria-label="Contesto"><span>2</span><em>Contesto</em></button>
+<button class="nav-btn" data-index="2" aria-label="Contesto"><span>3</span><em>Contesto</em></button>
+<button class="nav-btn" data-index="3" aria-label="La mia UDA"><span>4</span><em>La mia UDA</em></button>
+<button class="nav-btn" data-index="4" aria-label="La mia UDA"><span>5</span><em>La mia UDA</em></button>
+<button class="nav-btn" data-index="5" aria-label="Obiettivi, metodi, interventi"><span>6</span><em>Obiettivi, metodi, interventi</em></button>
+<button class="nav-btn" data-index="6" aria-label="TIC"><span>7</span><em>TIC</em></button>
+<button class="nav-btn" data-index="7" aria-label="Esiti"><span>8</span><em>Esiti</em></button>
+<button class="nav-btn" data-index="8" aria-label="Riflessioni"><span>9</span><em>Riflessioni</em></button>
+<button class="nav-btn" data-index="9" aria-label="Conclusioni"><span>10</span><em>Conclusioni</em></button>
+</nav>
+
+<div class="popup-overlay" id="popupOverlay" onclick="closePopupFromOverlay(event)">
+  <div class="popup-window">
+    <a id="popupFallback" class="popup-fallback" href="#" target="_blank" rel="noopener">Apri in nuova scheda</a><div style="position:absolute;left:18px;top:58px;z-index:2;color:#102f45;font-size:.8rem;background:rgba(255,255,255,.9);padding:6px 10px;border-radius:999px;">Se un contenuto non compare nel popup, aprilo nella nuova scheda.</div>
+    <button class="popup-close" onclick="closePopup()" aria-label="Chiudi">×</button>
+    <iframe id="popupFrame" title="Contenuto esterno"></iframe>
+  </div>
+</div>
+
+<script>
+const slides = [
+{file:'slide_01.html',title:'Home',number:1},
+{file:'slide_02.html',title:'Contesto',number:2},
+{file:'slide_03.html',title:'Contesto',number:3},
+{file:'slide_04.html',title:'La mia UDA',number:4},
+{file:'slide_05.html',title:'La mia UDA',number:5},
+{file:'slide_06.html',title:'Obiettivi, metodi, interventi',number:6},
+{file:'slide_07.html',title:'TIC',number:7},
+{file:'slide_08.html',title:'Esiti',number:8},
+{file:'slide_09.html',title:'Riflessioni',number:9},
+{file:'slide_10.html',title:'Conclusioni',number:10}
+];
+let current = 0;
+
+const slideFrame = document.getElementById('slideFrame');
+const buttons = Array.from(document.querySelectorAll('.nav-btn'));
+
+function showSlide(index) {
+  if (!slides.length) return;
+  if (index < 0) index = slides.length - 1;
+  if (index >= slides.length) index = 0;
+  current = index;
+  slideFrame.src = slides[current].file;
+  buttons.forEach(btn => btn.classList.remove('active'));
+  buttons[current].classList.add('active');
+}
+
+function go(step) {
+  showSlide(current + step);
+}
+
+buttons.forEach((btn, index) => {
+  btn.addEventListener('click', () => showSlide(index));
+});
+
+function convertToEmbeddable(url){
+
+  try{
+
+    // GOOGLE DRIVE FILE
+    if(url.includes('drive.google.com/file/d/')){
+      const match = url.match(/\/d\/([^\/]+)/);
+      if(match){
+        return 'https://drive.google.com/file/d/' + match[1] + '/preview';
+      }
+    }
+
+    // GOOGLE DRIVE FOLDER
+    if(url.includes('drive.google.com/drive/folders/')){
+      return url;
+    }
+
+    // GOOGLE FORMS
+    if(url.includes('docs.google.com/forms')){
+      if(url.includes('viewform')){
+        return url + (url.includes('?') ? '&' : '?') + 'embedded=true';
+      }
+    }
+
+    // GOOGLE SITES
+    if(url.includes('sites.google.com')){
+      return url;
+    }
+
+    // GITHUB PAGES
+    if(url.includes('github.io')){
+      return url;
+    }
+
+    // DEFAULT
+    return url;
+
+  } catch(e){
+    return url;
+  }
+}
+
+function openPopup(url) {
+
+  const overlay = document.getElementById('popupOverlay');
+  const frame = document.getElementById('popupFrame');
+  const fallback = document.getElementById('popupFallback');
+
+  fallback.href = url;
+
+  const embeddable = convertToEmbeddable(url);
+
+  frame.src = embeddable;
+
+  overlay.classList.add('open');
+}
+
+function closePopup() {
+  const overlay = document.getElementById('popupOverlay');
+  const frame = document.getElementById('popupFrame');
+  overlay.classList.remove('open');
+  frame.src = 'about:blank';
+}
+
+function closePopupFromOverlay(event) {
+  if (event.target.id === 'popupOverlay') closePopup();
+}
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closePopup();
+  if (event.key === 'ArrowRight') go(1);
+  if (event.key === 'ArrowLeft') go(-1);
+});
+
+showSlide(0);
+</script>
+</body>
+</html>
